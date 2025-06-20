@@ -2,8 +2,7 @@
 
 ## What is this?
 
-This is a playground for you to install, run and manage an Octelium Cluster from within a GitHub Codespace. While we recommend you to install a demo Cluster over a cheap cloud instance (e.g. DigitalOcean, Vultr, EC2, Hetzner, etc...) or from within a Linux VM/microVM, this can be another way for you to play with Octelium without having to install it. Note the Cluster domain in our case here is going to be simply `localhost`.
-
+This is a playground for you to install, run and manage an Octelium Cluster from within a GitHub Codespace. While we recommend you to install a demo Cluster over a cheap cloud VM/VPS instance (e.g. DigitalOcean, Vultr, EC2, Hetzner, etc...) or from within a Linux VM/microVM inside your local machine, this methode serves as an additional way for you to play with Octelium and try managing it without having to install it on real machineor a Kubernetes cluster. Note the Cluster domain in our case here is going to be simply `localhost`.
 
 ## Steps
 
@@ -19,18 +18,24 @@ sudo chmod 755 ./install.sh
 
 This script will take a few minutes to complete depending on the Codespace's machine type (i.e. how much RAM and vCPUs it has).
 
-3. Open a new terminal tab and start running `octeliumctl` commands:
+3. Open a new terminal tab in your VSCode and start running `octelium` or `octeliumctl` commands. Here are some examples:
 
 ```bash
 octeliumctl get service
 #Or simply
 octeliumctl get svc
+
+octeliumctl get user
+
+octeliumctl create secret
+
+octelium status
 ```
 
 
 ## Managing the Cluster
 
-We recommend you to first read the quick guide managing the _Cluster_ [here](https://octelium.com/docs/octelium/latest/overview/management) to understand how the Cluster is managed. Furthermore, this repo has some Cluster configurations inside the directory `configs`. You can, for example, apply all these resources via the `octeliumctl apply` command as follows:
+We recommend you to first read the quick guide about managing the _Cluster_ [here](https://octelium.com/docs/octelium/latest/overview/management) to get an idea of how the Cluster is managed. Furthermore, this repo has some Cluster configurations inside the directory `configs` that includes a few resources (e.g. _Services_, _Namespaces_, _Users_ and _Groups_). You can, for example, create and apply all these resources via the `octeliumctl apply` command as follows:
 
 ```bash
 octeliumctl apply ./configs
@@ -44,6 +49,16 @@ octeliumctl apply ./configs/services
 octeliumctl apply ./configs/users/main.yaml 
 ```
 
+You can also read more about managing _Services_ [here](https://octelium.com/docs/octelium/latest/management/core/service/overview), secret-less access [here](https://octelium.com/docs/octelium/latest/management/core/service/secretless), access control and _Policies_ [here](https://octelium.com/docs/octelium/latest/management/core/policy).
+
+You might also want to have a look on some examples:
+
+- Zero trust access to SaaS PostgreSQL-based databases (e.g. NeonDB) [here](https://octelium.com/docs/octelium/latest/management/guide/service/databases/neon)
+- Octelium as infrastructure for MCP [here](https://octelium.com/docs/octelium/latest/management/guide/service/ai/self-hosted-mcp)
+- Octelium as ngrok alternative [here](https://octelium.com/docs/octelium/latest/management/guide/service/http/open-source-self-hosted-ngrok-alternative)
+- Octelium as an API gateway [here](https://octelium.com/docs/octelium/latest/management/guide/service/http/api-gateway)
+- Octelium as an AI gateway [here](https://octelium.com/docs/octelium/latest/management/guide/service/ai/ai-gateway)
+- Deploying and hosting (both securely for authorized Users as well as anonymously) containerized Next.js/Vite/Astro web apps [here](https://octelium.com/docs/octelium/latest/management/guide/service/http/nextjs-vite)
 
 ## Accessing Services
 
