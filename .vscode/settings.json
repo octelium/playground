@@ -1,0 +1,39 @@
+{
+  "[mdx]": {
+    "editor.wordWrap": "on"
+  },
+  "mdx.server.enable": true,
+  "workbench.colorTheme": "Default Dark Modern",
+  "editor.formatOnSave": true,
+  "workbench.startupEditor": "none",
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "cSpell.words": [
+    "ABAC",
+    "Beyondcorp",
+    "Dockerized",
+    "downstreams",
+    "kubeconfig",
+    "octelium",
+    "Octelium",
+    "OCTELIUM",
+    "octeliumctl",
+    "octops",
+    "Octospace",
+    "Octovigil",
+    "OIDC",
+    "QUIC",
+    "SIEM",
+    "TOTP",
+    "upstreams",
+    "Yubikey",
+    "ZTNA"
+  ]
+}

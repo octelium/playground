@@ -1,0 +1,22 @@
+node_modules
+
+/.cache
+/build
+.env
+.react-router/
+
+bin/
+vendor/
+tmp/
+
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+*.test
