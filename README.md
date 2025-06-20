@@ -12,7 +12,7 @@ This is a playground for you to install, run and manage an Octelium Cluster from
 2. Run the `install.sh` script as follows:
 
 ```bash
-chmod 755 ./install.sh
+sudo chmod 755 ./install.sh
 ./install.sh
 ```
 

@@ -2,7 +2,7 @@
 # Copyright 2025 Octelium Labs, LLC. All rights reserved. Apache 2.0 license.
 
 DOMAIN="localhost"
-VERSION="main"
+VERSION="latest"
 DEBIAN_FRONTEND=noninteractive
 K8S_VERSION=1.32
 PG_PASSWORD=$(openssl rand -base64 12)
@@ -101,6 +101,7 @@ curl -fsSL https://octelium.com/install.sh | bash
 
 export OCTELIUM_REGION_EXTERNAL_IP=${EXTERNAL_IP}
 export OCTELIUM_AUTH_TOKEN_SAVE_PATH="/tmp/octelium-auth-token"
+export OCTELIUM_SKIP_MESSAGES="true"
 octops init ${DOMAIN} --version ${VERSION} --bootstrap - <<EOF
 spec:
   primaryStorage:
