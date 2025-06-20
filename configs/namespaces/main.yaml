@@ -1,0 +1,11 @@
+kind: Namespace
+metadata:
+  name: production
+spec: {}
+---
+kind: Namespace
+metadata:
+  name: development
+spec:
+  authorization:
+    policies: ["allow-all"]

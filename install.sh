@@ -11,7 +11,7 @@ REDIS_PASSWORD=$(openssl rand -base64 12)
 sudo mount --make-rshared /
 sudo mkdir -p /usr/local/bin
 sudo apt-get update
-sudo apt-get install -y socat iputils-ping
+sudo apt-get install -y socat iputils-ping postgresql
 
 if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
   export PATH="/usr/local/bin:$PATH"
@@ -144,3 +144,4 @@ if [ -f ~/.zshrc ]; then
 fi
 
 source ~/.bashrc
+echo -e "\e[1mThe Cluster has been succesfuly installed. Open a new tab to start using octelium and octeliumctl commands.\e[0m"

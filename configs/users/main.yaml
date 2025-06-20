@@ -1,0 +1,14 @@
+kind: User
+metadata:
+  name: john
+spec:
+  type: HUMAN
+  email: john@example.com
+  groups: ["admins"]
+---
+kind: User
+metadata:
+  name: microservice1
+spec:
+  type: WORKLOAD
+  groups: ["admins"]

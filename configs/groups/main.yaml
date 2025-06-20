@@ -1,0 +1,6 @@
+kind: Group
+metadata:
+  name: admins
+spec:
+  authorization:
+    policies: ["allow-all"]

@@ -12,6 +12,16 @@ spec:
 ---
 kind: Service
 metadata:
+  name: google
+spec:
+  mode: WEB
+  isPublic: true
+  config:
+    upstream:
+      url: https://www.google.com
+---
+kind: Service
+metadata:
   name: nginx-anonymous
 spec:
   mode: WEB
@@ -22,3 +32,33 @@ spec:
       container:
         image: nginx
         port: 80
+---
+kind: Service
+metadata:
+  name: pg
+spec:
+  mode: TCP
+  port: 5432
+  config:
+    upstream:
+      container:
+        image: postgres
+        port: 5432
+        env:
+          - name: POSTGRES_PASSWORD
+            value: password
+---
+kind: Service
+metadata:
+  name: pg.production
+spec:
+  mode: TCP
+  port: 5432
+  config:
+    upstream:
+      container:
+        image: postgres
+        port: 5432
+        env:
+          - name: POSTGRES_PASSWORD
+            value: password
