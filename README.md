@@ -7,7 +7,7 @@ This is a playground for you to install, run and manage an Octelium Cluster from
 
 ## Steps
 
-1. Run the current Repo in a Codespace via the green "Code" button on top of this page. You might probably also need to wait a minute or 2 after the Codespace is initialized since the microVM host CPUs are usually busy at startup. This has nothing to do with this repo or Octelium. It's just how Codespaces operate at initialization.
+1. Run the current Repo in a Codespace via the green "Code" button on top of this page. You might probably also need to wait a minute or 2 after the Codespace is initialized since the microVM host CPUs are usually busy at startup. This has nothing to do with this repo or Octelium. It's just due to Codespace's heavy CPU usage upon initialization.
 
 2. Run the `install.sh` script as follows:
 

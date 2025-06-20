@@ -1,0 +1,24 @@
+kind: Service
+metadata:
+  name: nginx
+spec:
+  mode: WEB
+  isPublic: true
+  config:
+    upstream:
+      container:
+        image: nginx
+        port: 80
+---
+kind: Service
+metadata:
+  name: nginx-anonymous
+spec:
+  mode: WEB
+  isPublic: true
+  isAnonymous: true
+  config:
+    upstream:
+      container:
+        image: nginx
+        port: 80
