@@ -2,11 +2,11 @@
 
 ## What is this?
 
-This is a playground for you to install, run and manage an Octelium Cluster from within a GitHub Codespace. While we recommend you to install a demo Cluster over a cheap cloud VM/VPS instance (e.g. DigitalOcean, Vultr, EC2, Hetzner, etc...) or from within a Linux VM/microVM inside your local machine, this methode serves as an additional way for you to play with Octelium and try managing it without having to install it on real machineor a Kubernetes cluster. Note the Cluster domain in our case here is going to be simply `localhost`.
+This is a playground for you to install, run and manage an Octelium Cluster from within a GitHub Codespace. While we recommend you to install a demo Cluster over a cheap cloud VM/VPS instance such as DigitalOcean, Vultr, EC2, Hetzner, etc... (read more in the quick installation guide [here](https://octelium.com/docs/octelium/latest/overview/quick-install)) or from within a Linux VM/microVM inside your local machine, this methode serves as an additional way for you to play with Octelium and try managing it without having to install it on real machineor a Kubernetes cluster. Note the Cluster domain in our case here is going to be simply `localhost`.
 
 ## Steps
 
-1. Run the current Repo in a Codespace via the green "Code" button on top of this page. You might probably also need to wait a minute or 2 after the Codespace is initialized since the microVM host CPUs are usually busy at startup. This has nothing to do with this repo or Octelium. It's just due to Codespace's heavy CPU usage upon initialization.
+1. Run the current Repo in a Codespace via the green "Code" button on top of this page. You might probably also need to wait a minute or 2 after the Codespace is initialized since the microVM host CPUs are usually busy at startup. This has nothing to do with Octelium but due to Codespace's heavy CPU usage upon initialization.
 
 2. Run the `install.sh` script as follows:
 
@@ -79,7 +79,7 @@ curl http://localhost:8090
 
 ### Client-less Mode
 
-You can also access HTTP-based Services via the client-less (i.e. BeyondCorp) mode simply by using Octelium access tokens as a standard bearer token. You can, for example, directly create an access token _Credential_ as follows:
+You can also access HTTP-based Services via the client-less (i.e. BeyondCorp) mode simply by using Octelium access tokens as a standard bearer token (read more about _Credentials_ [here](https://octelium.com/docs/octelium/latest/management/core/credential)). You can, for example, directly create an access token _Credential_ as follows:
 
 
 ```bash
