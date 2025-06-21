@@ -84,10 +84,19 @@ You can also access HTTP-based Services via the client-less (i.e. BeyondCorp) mo
 
 ```bash
 octeliumctl create cred cred01 --user root --policy allow-all --type access-token
+
+# The output is something like
+Access Token: AQpAoWCZWpulnpQMRF3Nj45...
 ```
 
-And you can use the access token to access, for example, the protected `nginx` _Service_ via `curl` as follows:
+And you can use the access token to access, for example, the protected `nginx` _Service_ defined in `configs/services/main.yaml` via `curl` as follows:
 
 ```bash
-curl -k -H "Authorization: Bearer <ACCESS_TOKEN>" https://nginx.localhost
+curl -k -H "Authorization: Bearer AQpAoWCZWpulnpQMRF3Nj45..." https://nginx.localhost
+```
+
+For anonymous _Services_ such as `nginx-anonymous` defined in `configs/services/main.yaml` you can publicly access it without using bearer authentication as follows:
+
+```bash
+curl -k https://nginx-anonymous.localhost
 ```
