@@ -8,10 +8,25 @@ K8S_VERSION=1.32
 PG_PASSWORD=$(openssl rand -base64 12)
 REDIS_PASSWORD=$(openssl rand -base64 12)
 
+
+export OCTELIUM_DEV=true
+export OCTELIUM_DOMAIN="localhost"
+export KUBECONFIG="/etc/rancher/k3s/k3s.yaml"
+
+echo "export OCTELIUM_DEV=\"$OCTELIUM_DEV\"" >> ~/.bashrc
+echo "export OCTELIUM_DOMAIN=\"$OCTELIUM_DOMAIN\"" >> ~/.bashrc
+echo "export KUBECONFIG=\"$KUBECONFIG\"" >> ~/.bashrc
+
+if [ -f ~/.zshrc ]; then
+  echo "export OCTELIUM_DEV=\"$OCTELIUM_DEV\"" >> ~/.zshrc
+  echo "export OCTELIUM_DOMAIN=\"$OCTELIUM_DOMAIN\"" >> ~/.zshrc
+  echo "export KUBECONFIG=\"$KUBECONFIG\"" >> ~/.zshrc
+fi
+
 sudo mount --make-rshared /
 sudo mkdir -p /usr/local/bin
 sudo apt-get update
-sudo apt-get install -y socat iputils-ping postgresql
+sudo apt-get install -y iputils-ping
 
 if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
   export PATH="/usr/local/bin:$PATH"
@@ -27,19 +42,21 @@ curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stabl
 sudo cp kubectl /usr/local/bin
 sudo chmod 755 /usr/local/bin/kubectl
 
+curl -fsSL https://octelium.com/install.sh | bash
+
 
 export INSTALL_K3S_SKIP_START=true
 export INSTALL_K3S_SKIP_ENABLE=true
 export INSTALL_K3S_EXEC="--disable traefik"
 curl -sfL https://get.k3s.io | sh -
 
-export KUBECONFIG="/etc/rancher/k3s/k3s.yaml"
-
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 chmod 700 get_helm.sh
 sudo ./get_helm.sh
 
 sudo k3s server --disable traefik --docker --write-kubeconfig-mode 644 &>/dev/null &
+
+echo "Installing k3s"
 
 sleep 30
 
@@ -96,8 +113,6 @@ helm install --wait --timeout 30m0s octelium-pg oci://registry-1.docker.io/bitna
 	--set global.postgresql.auth.username=octelium \
   --set primary.networkPolicy.enabled=false --version 16.4.14
 
-curl -fsSL https://octelium.com/install.sh | bash
-
 
 export OCTELIUM_REGION_EXTERNAL_IP=${EXTERNAL_IP}
 export OCTELIUM_AUTH_TOKEN_SAVE_PATH="/tmp/octelium-auth-token"
@@ -126,22 +141,9 @@ kubectl wait --for=condition=available deployment/octelium-ingress --namespace o
 
 AUTH_TOKEN=$(cat $OCTELIUM_AUTH_TOKEN_SAVE_PATH)
 
-export OCTELIUM_DEV=true
-export OCTELIUM_DOMAIN="localhost"
-
 sleep 3
 
 octelium login --domain localhost --auth-token $AUTH_TOKEN
 
-echo "export OCTELIUM_DEV=\"$OCTELIUM_DEV\"" >> ~/.bashrc
-echo "export OCTELIUM_DOMAIN=\"$OCTELIUM_DOMAIN\"" >> ~/.bashrc
-echo "export KUBECONFIG=\"$KUBECONFIG\"" >> ~/.bashrc
-
-if [ -f ~/.zshrc ]; then
-  echo "export OCTELIUM_DEV=\"$OCTELIUM_DEV\"" >> ~/.zshrc
-  echo "export OCTELIUM_DOMAIN=\"$OCTELIUM_DOMAIN\"" >> ~/.zshrc
-  echo "export KUBECONFIG=\"$KUBECONFIG\"" >> ~/.zshrc
-fi
-
 source ~/.bashrc
-echo -e "\e[1mThe Cluster has been succesfuly installed. Open a new tab to start using octelium and octeliumctl commands.\e[0m"
+echo -e "\e[1mThe Cluster has been successfully installed. Open a new tab to start using octelium and octeliumctl commands.\e[0m"
