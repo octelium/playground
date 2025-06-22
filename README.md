@@ -2,7 +2,7 @@
 
 ## What is this?
 
-This is a playground for you to install, run and manage an Octelium Cluster from within a GitHub Codespace. While we recommend you to install a demo Cluster over a cheap cloud VM/VPS instance such as DigitalOcean, Vultr, EC2, Hetzner, etc... (read more in the quick installation guide [here](https://octelium.com/docs/octelium/latest/overview/quick-install)) or from within a Linux VM/microVM inside your local machine, this methode serves as an additional way for you to play with Octelium and try managing it without having to install it on real machineor a Kubernetes cluster. Note the Cluster domain in our case here is going to be simply `localhost`.
+This is a playground for you to install, run and manage an Octelium Cluster inside a GitHub Codespace. While we recommend you to install a demo Cluster over a cheap cloud VM/VPS instance such as DigitalOcean, Vultr, EC2, Hetzner, etc... (read more in the quick installation guide [here](https://octelium.com/docs/octelium/latest/overview/quick-install)) or from within a Linux VM/microVM inside your local machine, this method serves as an additional way for you to play with Octelium and try managing it without having to install it on real machine or a Kubernetes cluster. Note the Cluster domain in our case here is going to be simply `localhost`.
 
 ## Steps
 
@@ -14,7 +14,6 @@ This is a playground for you to install, run and manage an Octelium Cluster from
 sudo chmod 755 ./install.sh
 ./install.sh
 ```
-
 
 This script will take a few minutes to complete depending on the Codespace's machine type (i.e. how much RAM and vCPUs it has).
 
@@ -32,7 +31,6 @@ octeliumctl create secret
 octelium status
 ```
 
-
 ## Managing the Cluster
 
 We recommend you to first read the quick guide about managing the _Cluster_ [here](https://octelium.com/docs/octelium/latest/overview/management) to get an idea of how the Cluster is managed. Furthermore, this repo has some Cluster configurations inside the directory `configs` that includes a few resources (e.g. _Services_, _Namespaces_, _Users_ and _Groups_). You can, for example, create and apply all these resources via the `octeliumctl apply` command as follows:
@@ -46,10 +44,17 @@ You can also apply a certain sub-directory or even a single file as follows:
 ```bash
 octeliumctl apply ./configs/services
 # OR
-octeliumctl apply ./configs/users/main.yaml 
+octeliumctl apply ./configs/users/main.yaml
 ```
 
-You can also read more about managing _Services_ [here](https://octelium.com/docs/octelium/latest/management/core/service/overview), secret-less access [here](https://octelium.com/docs/octelium/latest/management/core/service/secretless), access control and _Policies_ [here](https://octelium.com/docs/octelium/latest/management/core/policy).
+You can also read more about managing the _Cluster_ in the following guides:
+
+- Managing _Services_ [here](https://octelium.com/docs/octelium/latest/management/core/service/overview)
+- Secret-less access [here](https://octelium.com/docs/octelium/latest/management/core/service/secretless) to provide seamless access to APIs, databases and SSH servers without sharing API keys or passwords, access control and _Policies_ [here](https://octelium.com/docs/octelium/latest/management/core/policy)
+- Managing _Users_ [here](https://octelium.com/docs/octelium/latest/management/core/user).
+- Managing _Namespaces_ [here](https://octelium.com/docs/octelium/latest/management/core/namespace).
+- Managing _Groups_ [here](https://octelium.com/docs/octelium/latest/management/core/group).
+- Managing _Secrets_ [here](https://octelium.com/docs/octelium/latest/management/core/secret).
 
 You might also want to have a look on some examples:
 
@@ -76,11 +81,9 @@ Now you can access the protected `nginx` _Service_ which is mapped to the local 
 curl http://localhost:8090
 ```
 
-
 ### Client-less Mode
 
 You can also access HTTP-based Services via the client-less (i.e. BeyondCorp) mode simply by using Octelium access tokens as a standard bearer token (read more about _Credentials_ [here](https://octelium.com/docs/octelium/latest/management/core/credential)). You can, for example, directly create an access token _Credential_ as follows:
-
 
 ```bash
 octeliumctl create cred cred01 --user root --policy allow-all --type access-token
@@ -93,6 +96,8 @@ And you can use the access token to access, for example, the protected `nginx` _
 
 ```bash
 curl -k -H "Authorization: Bearer AQpAoWCZWpulnpQMRF3Nj45..." https://nginx.localhost
+
+# Note that the Service FQDN is "nginx.localhost" because the Cluster domain is "localhost"
 ```
 
 For anonymous _Services_ such as `nginx-anonymous` defined in `configs/services/main.yaml` you can publicly access it without using bearer authentication as follows:
