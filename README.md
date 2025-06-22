@@ -50,11 +50,16 @@ octeliumctl apply ./configs/users/main.yaml
 You can also read more about managing the _Cluster_ in the following guides:
 
 - Managing _Services_ [here](https://octelium.com/docs/octelium/latest/management/core/service/overview)
-- Secret-less access [here](https://octelium.com/docs/octelium/latest/management/core/service/secretless) to provide seamless access to APIs, databases and SSH servers without sharing API keys or passwords, access control and _Policies_ [here](https://octelium.com/docs/octelium/latest/management/core/policy)
+- Secret-less access [here](https://octelium.com/docs/octelium/latest/management/core/service/secretless) to provide seamless access to APIs, databases and SSH servers without sharing API keys or passwords.
+- Access control and _Policies_ [here](https://octelium.com/docs/octelium/latest/management/core/policy)
 - Managing _Users_ [here](https://octelium.com/docs/octelium/latest/management/core/user).
 - Managing _Namespaces_ [here](https://octelium.com/docs/octelium/latest/management/core/namespace).
 - Managing _Groups_ [here](https://octelium.com/docs/octelium/latest/management/core/group).
 - Managing _Secrets_ [here](https://octelium.com/docs/octelium/latest/management/core/secret).
+- Managing _Credentials_ [here](https://octelium.com/docs/octelium/latest/management/core/credential).
+- Dynamic _Service_ configuration and routing [here](https://octelium.com/docs/octelium/latest/management/core/service/dynamic-config).
+- Client-less/BeyondCorp (https://octelium.com/docs/octelium/latest/management/core/service/clientless) and anonymous access [here](https://octelium.com/docs/octelium/latest/management/core/service/anonymous-access)
+- Deploying _Services_ via managed containers [here](https://octelium.com/docs/octelium/latest/management/core/service/managed-containers).
 
 You might also want to have a look on some examples:
 
