@@ -9,16 +9,16 @@ PG_PASSWORD=$(openssl rand -base64 12)
 REDIS_PASSWORD=$(openssl rand -base64 12)
 
 
-export OCTELIUM_DEV=true
+export OCTELIUM_INSECURE_TLS=true
 export OCTELIUM_DOMAIN="localhost"
 export KUBECONFIG="/etc/rancher/k3s/k3s.yaml"
 
-echo "export OCTELIUM_DEV=\"$OCTELIUM_DEV\"" >> ~/.bashrc
+echo "export OCTELIUM_INSECURE_TLS=\"$OCTELIUM_INSECURE_TLS\"" >> ~/.bashrc
 echo "export OCTELIUM_DOMAIN=\"$OCTELIUM_DOMAIN\"" >> ~/.bashrc
 echo "export KUBECONFIG=\"$KUBECONFIG\"" >> ~/.bashrc
 
 if [ -f ~/.zshrc ]; then
-  echo "export OCTELIUM_DEV=\"$OCTELIUM_DEV\"" >> ~/.zshrc
+  echo "export OCTELIUM_INSECURE_TLS=\"$OCTELIUM_INSECURE_TLS\"" >> ~/.zshrc
   echo "export OCTELIUM_DOMAIN=\"$OCTELIUM_DOMAIN\"" >> ~/.zshrc
   echo "export KUBECONFIG=\"$KUBECONFIG\"" >> ~/.zshrc
 fi
@@ -144,6 +144,8 @@ AUTH_TOKEN=$(cat $OCTELIUM_AUTH_TOKEN_SAVE_PATH)
 sleep 3
 
 octelium login --domain localhost --auth-token $AUTH_TOKEN
+
+octeliumctl create secret pg --value ${PG_PASSWORD}
 
 source ~/.bashrc
 echo -e "\e[1mThe Cluster has been successfully installed. Open a new tab to start using octelium and octeliumctl commands.\e[0m"
