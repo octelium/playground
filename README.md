@@ -92,7 +92,7 @@ And you can also access to the `postgres-main` PostgreSQL database in a secret-l
 psql -h localhost -U octelium
 ```
 
-You can play with the embedded SSH mode where you can SSH into the Codespace (let's pretend that it is some remote container, machine, IoT, etc...) from within the Codespace machine.
+You can play with the embedded SSH mode (read more [here](https://octelium.com/docs/octelium/latest/management/core/service/embedded-ssh)) where you can SSH into the Codespace (let's pretend that it is some remote container, machine, IoT, etc...) from within the Codespace machine.
 
 ```bash
 octelium connect --essh -p essh:2022
