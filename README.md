@@ -77,13 +77,37 @@ You might also want to have a look on some examples:
 You can actually currently connect to the Cluster via the rootless gVisor mode and map the _Services_ you would like to use. Here is an example:
 
 ```bash
-octelium connect -p nginx:8090 -p pg:5432
+octelium connect -p nginx:8090 -p postgres-main:5432
 ```
 
 Now you can access the protected `nginx` _Service_ which is mapped to the local machine's port `8090` as follows:
 
 ```bash
 curl http://localhost:8090
+```
+
+And you can also access to the `postgres-main` PostgreSQL database in a secret-less way without having to know the database's password, which is actually the main store for the Octelium _Cluster_ itself, as follows:
+
+```bash
+psql -h localhost -U octelium
+```
+
+You can play with the embedded SSH mode where you can SSH into the Codespace (let's pretend that it is some remote container, machine, IoT, etc...) from within the Codespace machine.
+
+```bash
+octelium connect --essh -p essh:2022
+```
+
+You can get the name of your own _Session_ as follows:
+
+```bash
+octeliumctl get sess
+```
+
+And use the name to SSH into the Codespace as follows:
+
+```bash
+ssh -p 2022 root-abcdef@localhost
 ```
 
 ### Client-less Mode
@@ -100,7 +124,7 @@ Access Token: AQpAoWCZWpulnpQMRF3Nj45...
 And you can use the access token to access, for example, the protected `nginx` _Service_ defined in `configs/services/main.yaml` via `curl` as follows:
 
 ```bash
-curl -k -H "Authorization: Bearer AQpAoWCZWpulnpQMRF3Nj45..." https://nginx.localhost
+curl -H "Authorization: Bearer AQpAoWCZWpulnpQMRF3Nj45..." https://nginx.localhost
 
 # Note that the Service FQDN is "nginx.localhost" because the Cluster domain is "localhost"
 ```
@@ -108,5 +132,5 @@ curl -k -H "Authorization: Bearer AQpAoWCZWpulnpQMRF3Nj45..." https://nginx.loca
 For anonymous _Services_ such as `nginx-anonymous` defined in `configs/services/main.yaml` you can publicly access it without using bearer authentication as follows:
 
 ```bash
-curl -k https://nginx-anonymous.localhost
+curl https://nginx-anonymous.localhost
 ```

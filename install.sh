@@ -23,10 +23,13 @@ if [ -f ~/.zshrc ]; then
   echo "export KUBECONFIG=\"$KUBECONFIG\"" >> ~/.zshrc
 fi
 
+
+echo insecure >> ~/.curlrc
+
 sudo mount --make-rshared /
 sudo mkdir -p /usr/local/bin
 sudo apt-get update
-sudo apt-get install -y iputils-ping
+sudo apt-get install -y iputils-ping postgresql
 
 if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
   export PATH="/usr/local/bin:$PATH"

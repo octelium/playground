@@ -62,3 +62,28 @@ spec:
         env:
           - name: POSTGRES_PASSWORD
             value: password
+---
+kind: Service
+metadata:
+  name: postgres-main
+spec:
+  mode: POSTGRES
+  port: 5432
+  config:
+    upstream:
+      url: postgres://octelium-pg-postgresql.default.svc
+    postgres:
+      user: octelium
+      database: octelium
+      auth:
+        password:
+          fromSecret: pg
+---
+kind: Service
+metadata:
+  name: essh
+spec:
+  mode: SSH
+  config:
+    ssh:
+      eSSHMode: true
