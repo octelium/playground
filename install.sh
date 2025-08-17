@@ -134,6 +134,9 @@ spec:
       password: ${REDIS_PASSWORD}
       host: octelium-redis-master.default.svc
       port: 6379
+  network:
+    quicv0:
+      enable: true
 EOF
 
 kubectl wait --for=condition=available deployment/svc-default-octelium-api --namespace octelium --timeout=600s
