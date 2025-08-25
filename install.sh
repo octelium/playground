@@ -10,15 +10,18 @@ REDIS_PASSWORD=$(openssl rand -base64 12)
 
 
 export OCTELIUM_INSECURE_TLS=true
+export OCTELIUM_QUIC=true
 export OCTELIUM_DOMAIN="localhost"
 export KUBECONFIG="/etc/rancher/k3s/k3s.yaml"
 
 echo "export OCTELIUM_INSECURE_TLS=\"$OCTELIUM_INSECURE_TLS\"" >> ~/.bashrc
+echo "export OCTELIUM_QUIC=\"$OCTELIUM_QUIC\"" >> ~/.bashrc
 echo "export OCTELIUM_DOMAIN=\"$OCTELIUM_DOMAIN\"" >> ~/.bashrc
 echo "export KUBECONFIG=\"$KUBECONFIG\"" >> ~/.bashrc
 
 if [ -f ~/.zshrc ]; then
   echo "export OCTELIUM_INSECURE_TLS=\"$OCTELIUM_INSECURE_TLS\"" >> ~/.zshrc
+  echo "export OCTELIUM_QUIC=\"$OCTELIUM_QUIC\"" >> ~/.zshrc
   echo "export OCTELIUM_DOMAIN=\"$OCTELIUM_DOMAIN\"" >> ~/.zshrc
   echo "export KUBECONFIG=\"$KUBECONFIG\"" >> ~/.zshrc
 fi

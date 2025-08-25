@@ -2,7 +2,7 @@
 
 ## What is this?
 
-This is a playground for you to install, run and manage an Octelium Cluster inside a GitHub Codespace. While we recommend you to install a demo Cluster over a cheap cloud VM/VPS instance such as DigitalOcean, Vultr, EC2, Hetzner, etc... (read more in the quick installation guide [here](https://octelium.com/docs/octelium/latest/overview/quick-install)) or from within a Linux VM/microVM inside your local machine, this method serves as an additional way for you to play with Octelium and try managing it without having to install it on real machine or a Kubernetes cluster. Note the Cluster domain in our case here is going to be simply `localhost`.
+This is a playground for you to install, run and manage an Octelium Cluster inside a GitHub Codespace. While we recommend you to install a demo Cluster over a cheap cloud VM/VPS instance such as DigitalOcean, Vultr, EC2, Hetzner, etc... (read more in the quick installation guide [here](https://octelium.com/docs/octelium/latest/overview/quick-install)) or from within a Linux VM/microVM inside your local machine, this method serves as an additional way for you to play with Octelium and try managing it without having to install it on real machine or a Kubernetes cluster. Note the Cluster domain in our case here is going to be simply `localhost`. It's **important** to understand, however, that this is just a playground that's designed for you to play with `octelium` and `octeliumctl` commands; it's always more recommended to try your first Octelium _Cluster_ as shown in the quick installation guide [here](https://octelium.com/docs/octelium/latest/overview/quick-install) to fully use the _Cluster_'s capabilities.
 
 ## Steps
 
