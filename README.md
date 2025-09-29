@@ -77,7 +77,7 @@ You might also want to have a look on some examples:
 You can actually currently connect to the Cluster via the rootless gVisor mode and map the _Services_ you would like to use. Here is an example:
 
 ```bash
-octelium connect --tunnel-mode quicv0 -p nginx:8090 -p postgres-main:5432
+octelium connect -p nginx:8090 -p postgres-main:5432
 ```
 
 Now you can access the protected `nginx` _Service_ which is mapped to the local machine's port `8090` as follows:
@@ -95,7 +95,7 @@ psql -h localhost -U octelium
 You can play with the embedded SSH mode (read more [here](https://octelium.com/docs/octelium/latest/management/core/service/embedded-ssh)) where you can SSH into the Codespace (let's pretend that it is some remote container, machine, IoT, etc...) from within the Codespace machine.
 
 ```bash
-octelium connect --tunnel-mode quicv0 --essh -p essh:2022
+octelium connect --essh -p essh:2022
 ```
 
 You can get the name of your own _Session_ as follows:
