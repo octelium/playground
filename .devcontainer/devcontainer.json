@@ -1,0 +1,17 @@
+{
+  "name": "Octelium playground",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu-24.04",
+  "privileged": true,
+  "init": true,
+  "remoteUser": "vscode",
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "4gb",
+    "storage": "16gb"
+  },
+  "mounts": [
+    "source=${localWorkspaceFolderBasename}-k3s-data,target=/var/lib/rancher/k3s,type=volume",
+    "source=${localWorkspaceFolderBasename}-k3s-config,target=/etc/rancher/k3s,type=volume",
+    "source=${localWorkspaceFolderBasename}-octelium-data,target=/mnt/octelium,type=volume"
+  ]
+}

@@ -71,7 +71,7 @@ spec:
   port: 5432
   config:
     upstream:
-      url: postgres://octelium-pg-postgresql.default.svc
+      url: postgres://octelium-postgresql.default.svc
     postgres:
       user: octelium
       database: octelium

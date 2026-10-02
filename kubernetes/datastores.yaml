@@ -1,0 +1,368 @@
+# Adapted from https://octelium.com/install-cluster.sh (2026-10-02).
+# Copyright 2026 Octelium Labs, LLC. MIT license.
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: ${PRIORITY_CLASS}
+  labels:
+    app.kubernetes.io/managed-by: octelium-installer
+value: 1000000
+globalDefault: false
+preemptionPolicy: PreemptLowerPriority
+description: Octelium datastores. Must outrank normal workloads under memory pressure.
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ${PG_SECRET_NAME}
+  namespace: ${NS}
+  labels:
+    app.kubernetes.io/managed-by: octelium-installer
+type: Opaque
+stringData:
+  username: octelium
+  password: '${PG_PASSWORD}'
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ${VALKEY_SECRET_NAME}
+  namespace: ${NS}
+  labels:
+    app.kubernetes.io/managed-by: octelium-installer
+type: Opaque
+stringData:
+  password: '${VALKEY_SECRET_PASSWORD}'
+  valkey.conf: |-
+    bind 0.0.0.0
+    port 6379
+    protected-mode yes
+    requirepass "${VALKEY_SECRET_PASSWORD}"
+    save ""
+    appendonly no
+    dir /data
+    loglevel notice
+    tcp-keepalive 300
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ${PG_STORAGE_CLASS}
+  labels:
+    app.kubernetes.io/managed-by: octelium-installer
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ${PG_PV_NAME}
+  labels:
+    app.kubernetes.io/managed-by: octelium-installer
+spec:
+  storageClassName: ${PG_STORAGE_CLASS}
+  capacity:
+    storage: ${DB_SIZE}
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  claimRef:
+    namespace: ${NS}
+    name: ${PG_PVC_NAME}
+  local:
+    path: ${DB_DIR}
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - ${NODE_NAME}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${PG_PVC_NAME}
+  namespace: ${NS}
+  labels:
+    app.kubernetes.io/managed-by: octelium-installer
+spec:
+  storageClassName: ${PG_STORAGE_CLASS}
+  volumeName: ${PG_PV_NAME}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: ${DB_SIZE}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${PG_APP}-headless
+  namespace: ${NS}
+  labels:
+    app.kubernetes.io/name: ${PG_APP}
+    app.kubernetes.io/managed-by: octelium-installer
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: true
+  selector:
+    app.kubernetes.io/name: ${PG_APP}
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: postgresql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${PG_APP}
+  namespace: ${NS}
+  labels:
+    app.kubernetes.io/name: ${PG_APP}
+    app.kubernetes.io/managed-by: octelium-installer
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: ${PG_APP}
+  ports:
+    - name: postgresql
+      port: 5432
+      targetPort: postgresql
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ${PG_APP}
+  namespace: ${NS}
+  labels:
+    app.kubernetes.io/name: ${PG_APP}
+    app.kubernetes.io/managed-by: octelium-installer
+spec:
+  serviceName: ${PG_APP}-headless
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ${PG_APP}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ${PG_APP}
+        app.kubernetes.io/managed-by: octelium-installer
+    spec:
+      priorityClassName: ${PRIORITY_CLASS}
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 120
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: ${PG_RUN_UID}
+        runAsGroup: ${PG_RUN_GID}
+        fsGroup: ${PG_RUN_GID}
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: postgres
+          image: ${PG_IMAGE}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_DB
+              value: octelium
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ${PG_SECRET_NAME}
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ${PG_SECRET_NAME}
+                  key: password
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: scram-sha-256
+            - name: POSTGRES_INITDB_ARGS
+              value: --data-checksums
+          ports:
+            - name: postgresql
+              containerPort: 5432
+              protocol: TCP
+          resources:
+            requests:
+              cpu: ${PG_CPU_REQUEST}
+              memory: ${PG_MEMORY_REQUEST}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+          startupProbe:
+            exec:
+              command:
+                - sh
+                - -ec
+                - pg_isready -q -U "$POSTGRES_USER" -d octelium -h 127.0.0.1
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 180
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -ec
+                - pg_isready -q -U "$POSTGRES_USER" -d octelium -h 127.0.0.1
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: ${PG_PVC_NAME}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${VALKEY_APP}
+  namespace: ${NS}
+  labels:
+    app.kubernetes.io/name: ${VALKEY_APP}
+    app.kubernetes.io/managed-by: octelium-installer
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: ${VALKEY_APP}
+  ports:
+    - name: valkey
+      port: 6379
+      targetPort: valkey
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${VALKEY_APP}
+  namespace: ${NS}
+  labels:
+    app.kubernetes.io/name: ${VALKEY_APP}
+    app.kubernetes.io/managed-by: octelium-installer
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ${VALKEY_APP}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ${VALKEY_APP}
+        app.kubernetes.io/managed-by: octelium-installer
+      annotations:
+        octelium.com/valkey-config-revision: "${VALKEY_CONFIG_REVISION}"
+    spec:
+      priorityClassName: ${PRIORITY_CLASS}
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 30
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+        - key: node-role.kubernetes.io/master
+          operator: Exists
+          effect: NoSchedule
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: ${VALKEY_RUN_UID}
+        runAsGroup: ${VALKEY_RUN_GID}
+        fsGroup: ${VALKEY_RUN_GID}
+        fsGroupChangePolicy: OnRootMismatch
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: valkey
+          image: ${VALKEY_IMAGE}
+          imagePullPolicy: IfNotPresent
+          command:
+            - valkey-server
+            - /etc/valkey/valkey.conf
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          env:
+            - name: VALKEY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ${VALKEY_SECRET_NAME}
+                  key: password
+          ports:
+            - name: valkey
+              containerPort: 6379
+              protocol: TCP
+          resources:
+            requests:
+              cpu: ${VALKEY_CPU_REQUEST}
+              memory: ${VALKEY_MEMORY_REQUEST}
+          volumeMounts:
+            - name: config
+              mountPath: /etc/valkey
+              readOnly: true
+            - name: data
+              mountPath: /data
+            - name: tmp
+              mountPath: /tmp
+          startupProbe:
+            exec:
+              command:
+                - sh
+                - -ec
+                - valkey-cli --no-auth-warning -a "$VALKEY_PASSWORD" ping | grep -qx PONG
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 60
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -ec
+                - valkey-cli --no-auth-warning -a "$VALKEY_PASSWORD" ping | grep -qx PONG
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 6
+          livenessProbe:
+            tcpSocket:
+              port: valkey
+            initialDelaySeconds: 30
+            periodSeconds: 20
+            timeoutSeconds: 3
+            failureThreshold: 6
+      volumes:
+        - name: config
+          secret:
+            secretName: ${VALKEY_SECRET_NAME}
+            defaultMode: 0440
+            items:
+              - key: valkey.conf
+                path: valkey.conf
+        - name: data
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}

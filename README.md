@@ -1,35 +1,109 @@
 # Octelium Codespace Playground
 
-## What is this?
+Run a single-node Octelium cluster inside a GitHub Codespace and use `octelium`
+and `octeliumctl` from its terminal. The cluster domain is `localhost` and the
+gateway is the Codespace's own local IPv4 address. For a cluster you can access
+from other machines, follow the [official quick installation guide](https://octelium.com/docs/octelium/latest/overview/quick-install).
 
-This is a playground for you to install, run and manage an Octelium Cluster inside a GitHub Codespace. While we recommend you to install a demo Cluster over a cheap cloud VM/VPS instance such as DigitalOcean, Vultr, EC2, Hetzner, etc... (read more in the quick installation guide [here](https://octelium.com/docs/octelium/latest/overview/quick-install)) or from within a Linux VM/microVM inside your local machine, this method serves as an additional way for you to play with Octelium and try managing it without having to install it on real machine or a Kubernetes cluster. Note the Cluster domain in our case here is going to be simply `localhost`. It's **important** to understand, however, that this is just a playground that's designed for you to play with `octelium` and `octeliumctl` commands; it's always more recommended to try your first Octelium _Cluster_ as shown in the quick installation guide [here](https://octelium.com/docs/octelium/latest/overview/quick-install) to fully use the _Cluster_'s capabilities.
+## Install
 
-## Steps
+1. Create a Codespace from this repository using **Code → Codespaces**. The included
+   devcontainer runs privileged so K3s and the gateway can configure mounts and
+   networking. It requests at least **2 CPUs and 4 GB RAM**. If you already have a
+   Codespace, rebuild its container to pick up `.devcontainer/devcontainer.json`.
+2. Run as the normal Codespace user:
 
-1. Run the current Repo in a Codespace via the green "Code" button on top of this page. You might probably also need to wait a minute or 2 after the Codespace is initialized since the microVM host CPUs are usually busy at startup. This has nothing to do with Octelium but due to Codespace's heavy CPU usage upon initialization.
+   ```bash
+   bash install.sh
+   ```
 
-2. Run the `install.sh` script as follows:
+   Installation takes a few minutes. The script uses `sudo` for host setup and
+   reports Kubernetes errors when a workload fails to start.
+3. Open a new terminal, or load the environment in your current one:
+
+   ```bash
+   source .state/env.sh
+   octeliumctl get service
+   octeliumctl get user
+   octelium status
+   ```
+
+The installer follows the dependency setup in the
+[official cluster installer](https://octelium.com/install-cluster.sh): one
+PostgreSQL 17 pod with a retained 5 GiB local volume, one ephemeral Valkey pod
+(using Octelium's Redis storage protocol), and upstream Multus. Small resource
+requests keep them schedulable on a Codespace. K3s uses its bundled containerd;
+Traefik and metrics-server are disabled. Helm and a host PostgreSQL server are
+not needed. CoreDNS, local-path storage, and K3s ServiceLB remain available for
+service containers and localhost ingress.
+
+The node receives both Octelium control-plane and data-plane labels. Before
+bootstrap, `octelium.com/override-gw-ip` explicitly sets the local gateway address,
+`OCTELIUM_REGION_EXTERNAL_IP` sets the local ingress address, and `spec.cni.multusConfDir`
+aligns the gateway's delegate configuration directory with upstream Multus. The
+Multus DaemonSet separately uses K3s's CNI configuration and binary paths. This avoids advertising the Codespace's public
+NAT address. QUIC is enabled on the cluster; clients use WireGuard by default.
+
+## Rerun and configure
+
+Run `bash install.sh` again after restarting the Codespace or fixing an install
+failure. It starts K3s without systemd, reuses credentials and database storage,
+and skips completed Octelium bootstrap. A successful run also logs in the current
+user and applies the `pg` Secret used by the database example below.
+
+Installer state, a private kubeconfig, and credentials live in the ignored
+`.state/` directory. PostgreSQL data lives in `/mnt/octelium/playground-db`.
+The devcontainer mounts K3s's data/configuration and PostgreSQL data in named
+volumes; keep `.state/` together with those volumes. Deleting the Codespace deletes
+its playground. Back up anything you want to keep before doing so.
+
+You can pin releases on the first installation:
 
 ```bash
-sudo chmod 755 ./install.sh
-./install.sh
+bash install.sh --version <octelium-release> --k3s-version <k3s-release>
 ```
 
-This script will take a few minutes to complete depending on the Codespace's machine type (i.e. how much RAM and vCPUs it has).
-
-3. Open a new terminal tab in your VSCode and start running `octelium` or `octeliumctl` commands. Here are some examples:
+Use `octops upgrade localhost` for an existing Octelium cluster; rerunning the
+installer is not an upgrade operation. See `bash install.sh --help` for image,
+storage, state, and timeout overrides. For example, to explicitly choose an IPv4
+address assigned to the Codespace:
 
 ```bash
-octeliumctl get service
-#Or simply
-octeliumctl get svc
-
-octeliumctl get user
-
-octeliumctl create secret
-
-octelium status
+OCTELIUM_GATEWAY_IP=10.0.0.4 bash install.sh
 ```
+
+To inspect the dependency manifests without installing anything (requires
+`envsubst`, provided by `gettext-base`):
+
+```bash
+bash install.sh --print-manifests
+```
+
+## Troubleshooting and old installations
+
+Inspect the server log and Kubernetes workloads:
+
+```bash
+tail -n 80 .state/k3s.log
+source .state/env.sh
+kubectl get pods -A -o wide
+kubectl get events -A --field-selector=type=Warning --sort-by=.lastTimestamp
+kubectl -n default logs statefulset/octelium-postgresql
+kubectl -n default logs deployment/octelium-valkey
+kubectl -n kube-system logs daemonset/octelium-multus
+kubectl -n octelium logs daemonset/octelium-gwagent
+```
+
+Mount or networking permission errors usually mean the container needs rebuilding
+with this repository's privileged devcontainer configuration. Workload scheduling
+failures may require a larger Codespace.
+
+For a Codespace that ran the old Bitnami/Helm installer, start with a fresh
+Codespace. The new installer refuses a legacy PostgreSQL PVC or mismatched cluster
+state and does not migrate or erase an existing database. The old script also
+added `insecure` to `~/.curlrc`; remove that line if it is still present. The new
+script scopes insecure TLS to Octelium's self-signed localhost certificate. Use
+`curl --insecure` explicitly for the localhost examples below.
 
 ## Managing the Cluster
 
@@ -77,7 +151,7 @@ You might also want to have a look on some examples:
 You can actually currently connect to the Cluster via the rootless gVisor mode and map the _Services_ you would like to use. Here is an example:
 
 ```bash
-octelium connect -p nginx:8090 -p postgres-main:5432
+octelium connect --implementation gvisor -p nginx:8090 -p postgres-main:5432
 ```
 
 Now you can access the protected `nginx` _Service_ which is mapped to the local machine's port `8090` as follows:
@@ -89,13 +163,13 @@ curl http://localhost:8090
 And you can also access to the `postgres-main` PostgreSQL database in a secret-less way without having to know the database's password, which is actually the main store for the Octelium _Cluster_ itself, as follows:
 
 ```bash
-psql -h localhost -U octelium
+psql -h localhost -p 5432 -U octelium -d octelium
 ```
 
 You can play with the embedded SSH mode (read more [here](https://octelium.com/docs/octelium/latest/management/core/service/embedded-ssh)) where you can SSH into the Codespace (let's pretend that it is some remote container, machine, IoT, etc...) from within the Codespace machine.
 
 ```bash
-octelium connect --essh -p essh:2022
+octelium connect --implementation gvisor --essh -p essh:2022
 ```
 
 You can get the name of your own _Session_ as follows:
@@ -124,7 +198,7 @@ Access Token: AQpAoWCZWpulnpQMRF3Nj45...
 And you can use the access token to access, for example, the protected `nginx` _Service_ defined in `configs/services/main.yaml` via `curl` as follows:
 
 ```bash
-curl -H "Authorization: Bearer AQpAoWCZWpulnpQMRF3Nj45..." https://nginx.localhost
+curl --insecure -H "Authorization: Bearer AQpAoWCZWpulnpQMRF3Nj45..." https://nginx.localhost
 
 # Note that the Service FQDN is "nginx.localhost" because the Cluster domain is "localhost"
 ```
@@ -132,5 +206,20 @@ curl -H "Authorization: Bearer AQpAoWCZWpulnpQMRF3Nj45..." https://nginx.localho
 For anonymous _Services_ such as `nginx-anonymous` defined in `configs/services/main.yaml` you can publicly access it without using bearer authentication as follows:
 
 ```bash
-curl https://nginx-anonymous.localhost
+curl --insecure https://nginx-anonymous.localhost
 ```
+
+
+## Validate installer changes
+
+Run the mocked installer regression checks without launching a cluster:
+
+```bash
+bash -n install.sh tests/install.sh
+bash tests/install.sh
+```
+
+These checks cover fresh installation, credential reuse, local gateway selection,
+dependency readiness and authentication failures, and rejection of legacy or
+mismatched cluster state. They require `envsubst` from `gettext-base`. A real
+Codespace install is needed to verify nested container networking end to end.
